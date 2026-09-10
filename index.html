@@ -253,12 +253,97 @@
   .category-manage-list .c-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:.9rem;}
   .category-manage-list .c-del:hover{color:#C0392B;}
 
-  @media (max-width: 1100px){
-    .right-panel{display:none;}
+  /* =====================================================
+     RESPONSIVE — iPad / tablet (≤1024px)
+     Sidebar wordt een horizontale bovenbalk, het rechter-
+     paneel schuift onder de hoofdinhoud i.p.v. te verdwijnen.
+     ===================================================== */
+  @media (max-width: 1024px){
+    .app-shell{flex-direction:column;min-height:0;}
+
+    .sidebar{
+      width:100%;flex:0 0 auto;
+      flex-direction:row;align-items:center;
+      border-right:none;border-bottom:1px solid var(--line);
+      padding:14px 20px;gap:18px;
+    }
+    .brand{margin-bottom:0;flex:0 0 auto;}
+    .side-nav{
+      flex-direction:row;flex:1;gap:4px;
+      overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .side-nav::-webkit-scrollbar{display:none;}
+    .nav-item{white-space:nowrap;flex:0 0 auto;}
+
+    .main-content{padding:22px 20px;}
+
+    .right-panel{
+      display:flex;
+      width:100%;flex:0 0 auto;
+      flex-direction:row;flex-wrap:wrap;
+      padding:0 20px 26px;gap:18px;
+    }
+    .right-panel .card-panel{flex:1 1 280px;min-width:0;}
+    .mini-cal-panel{max-width:360px;}
   }
-  @media (max-width: 800px){
-    .sidebar{width:70px;flex:0 0 70px;padding:20px 8px;}
-    .sidebar .brand span:last-child,.nav-item span.lbl{display:none;}
+
+  @media (max-width: 1024px) and (min-width: 621px){
+    .week-grid{min-width:640px;}
+  }
+
+  /* =====================================================
+     RESPONSIVE — telefoon (≤620px)
+     Sidebar wordt een vaste onderbalk (tab-navigatie),
+     alles staat onder elkaar, agenda scrollt horizontaal.
+     ===================================================== */
+  @media (max-width: 620px){
+    body{padding-bottom:0;}
+
+    .sidebar{
+      position:fixed;left:0;right:0;bottom:0;top:auto;
+      z-index:1030;
+      border-bottom:none;border-top:1px solid var(--line);
+      padding:6px 4px;
+      box-shadow:0 -2px 10px rgba(20,25,50,.06);
+    }
+    .brand{display:none;}
+    .side-nav{justify-content:space-around;overflow-x:visible;gap:0;}
+    .nav-item{
+      flex:1 1 0;flex-direction:column;align-items:center;
+      gap:2px;padding:6px 2px;border-radius:10px;
+    }
+    .nav-item span.lbl{display:block;font-size:.62rem;line-height:1;}
+
+    .main-content{padding:18px 14px 90px;}
+
+    .top-header{flex-direction:column;align-items:stretch;gap:10px;margin-bottom:16px;}
+    .top-header h1{font-size:1.4rem;}
+    .header-right{width:100%;}
+    .search{width:100%;}
+
+    .right-panel{
+      flex-direction:column;flex-wrap:nowrap;
+      padding:0 14px 24px;gap:16px;
+    }
+    .mini-cal-panel{max-width:none;}
+
+    .agenda-card{padding:14px 12px 18px;}
+    .agenda-toolbar{gap:8px;}
+    #weekLabel{font-size:.92rem;}
+    .chip-btn{padding:6px 12px;font-size:.82rem;}
+
+    .week-grid{
+      grid-template-columns:44px repeat(7,minmax(86px,1fr));
+      min-width:646px;
+    }
+    .day-head{font-size:.7rem;padding:8px 2px;}
+    .day-head .d-num{font-size:.85rem;}
+    .time-slot{font-size:.62rem;padding-right:4px;}
+    .event-block{padding:4px 5px;font-size:.68rem;}
+    .event-block .ev-time{font-size:.6rem;}
+
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
   }
 </style>
 </head>
