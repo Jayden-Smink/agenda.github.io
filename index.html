@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyPlan – Planning</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6FA;
+    --surface:#FFFFFF;
+    --ink:#1E2233;
+    --muted:#6B7280;
+    --line:#E7E9F0;
+    --accent:#3E63DD;
+    --accent-soft:#EAEFFE;
+    --green:#2F9E63;
+    --green-soft:#E6F6EC;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  button{font-family:inherit;}
+  .app-shell{
+    display:flex;
+    min-height:100vh;
+    align-items:stretch;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:220px;
+    flex:0 0 220px;
+    background:var(--surface);
+    border-right:1px solid var(--line);
+    padding:24px 18px;
+    display:flex;
+    flex-direction:column;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:800;
+    font-size:1.15rem;
+    margin-bottom:32px;
+  }
+  .brand-icon{
+    width:34px;height:34px;border-radius:9px;
+    background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.1rem;
+  }
+  .side-nav{display:flex;flex-direction:column;gap:4px;flex:1;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    border:none;background:transparent;
+    text-align:left;padding:10px 12px;border-radius:10px;
+    font-size:0.95rem;font-weight:500;color:var(--muted);
+    cursor:pointer;transition:background .15s,color .15s;
+  }
+  .nav-item:hover{background:var(--bg);color:var(--ink);}
+  .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+
+  /* ---------- Main ---------- */
+  .main-content{flex:1;padding:28px 26px;min-width:0;}
+  .top-header{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    margin-bottom:22px;flex-wrap:wrap;gap:14px;
+  }
+  .top-header h1{font-size:1.8rem;font-weight:800;margin:0 0 4px;}
+  .top-header p{margin:0;color:var(--muted);}
+  .header-right{display:flex;align-items:center;gap:14px;}
+  .search{
+    border:1px solid var(--line);border-radius:10px;padding:9px 14px;
+    width:220px;background:var(--surface);font-size:.9rem;
+  }
+  .search:focus{outline:none;border-color:var(--accent);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .card-panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 22px;
+  }
+
+  /* ---------- Agenda ---------- */
+  .agenda-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px 22px;}
+  .agenda-toolbar{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;flex-wrap:wrap;gap:10px;
+  }
+  .week-nav{display:flex;align-items:center;gap:10px;}
+  .week-nav button{
+    width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+    background:var(--surface);cursor:pointer;font-size:1rem;color:var(--ink);
+  }
+  .week-nav button:hover{background:var(--bg);}
+  #weekLabel{font-weight:700;font-size:1.05rem;margin-left:4px;}
+  .toolbar-right{display:flex;align-items:center;gap:8px;}
+  .chip-btn{
+    border:1px solid var(--line);background:var(--surface);
+    padding:7px 16px;border-radius:9px;font-size:.88rem;cursor:pointer;color:var(--ink);
+  }
+  .chip-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .add-btn{
+    width:34px;height:34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--surface);font-size:1.1rem;cursor:pointer;color:var(--accent);
+    display:flex;align-items:center;justify-content:center;line-height:1;
+  }
+  .add-btn:hover{background:var(--accent-soft);}
+
+  .week-grid{
+    display:grid;
+    grid-template-columns:56px repeat(7,1fr);
+    border-top:1px solid var(--line);
+    overflow-x:auto;
+  }
+  .grid-corner{border-right:1px solid var(--line);}
+  .day-head{
+    text-align:center;padding:10px 4px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    font-size:.82rem;color:var(--muted);font-weight:600;
+  }
+  .day-head .d-num{display:block;font-size:1rem;color:var(--ink);font-weight:700;margin-top:2px;}
+  .day-head.is-today{background:var(--accent-soft);color:var(--accent);}
+  .day-head.is-today .d-num{color:var(--accent);}
+
+  .time-col{border-right:1px solid var(--line);position:relative;}
+  .time-slot{
+    height:56px;font-size:.72rem;color:var(--muted);text-align:right;
+    padding-right:6px;transform:translateY(-7px);border-bottom:1px solid transparent;
+  }
+  .day-col{
+    position:relative;border-right:1px solid var(--line);
+    background-image:linear-gradient(var(--line) 1px, transparent 1px);
+    background-size:100% 56px;
+    cursor:copy;
+  }
+  .day-col.is-today{background-color:#FAFBFF;}
+  .now-line{
+    position:absolute;left:0;right:0;height:2px;background:#E64545;z-index:5;
+  }
+  .now-line::before{
+    content:"";position:absolute;left:-4px;top:-4px;width:10px;height:10px;
+    border-radius:50%;background:#E64545;
+  }
+
+  .event-block{
+    position:absolute;left:3px;right:3px;border-radius:8px;
+    padding:6px 8px;font-size:.75rem;overflow:hidden;cursor:pointer;
+    border:1px solid rgba(0,0,0,.04);line-height:1.25;
+  }
+  .event-block .ev-time{display:block;font-size:.68rem;opacity:.85;margin-bottom:1px;}
+  .event-block .ev-title{display:block;font-weight:700;}
+  .event-block .ev-sub{display:block;font-weight:400;opacity:.85;}
+  .event-block:hover{filter:brightness(0.96);}
+
+  /* category colors */
+  .cat-wiskunde{background:#DCE8FF;color:#1D4ED8;}
+  .cat-engels{background:#FBE1E4;color:#BE123C;}
+  .cat-biologie{background:#DCF3E4;color:#15803D;}
+  .cat-programmeren{background:#FDF0D5;color:#B45309;}
+  .cat-projectwerk{background:#EAE1FB;color:#6D28D9;}
+  .cat-sport{background:#DCF3E4;color:#15803D;}
+  .cat-overig{background:#E7E9F0;color:#374151;}
+
+  /* ---------- Right panel ---------- */
+  .right-panel{
+    width:300px;flex:0 0 300px;padding:28px 24px;display:flex;flex-direction:column;gap:18px;
+  }
+  .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .panel-header h3{margin:0;font-size:1.05rem;font-weight:700;}
+  .panel-header a{font-size:.82rem;color:var(--accent);text-decoration:none;}
+
+  .task-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .task-item{display:flex;align-items:flex-start;gap:10px;}
+  .task-item input[type=checkbox]{margin-top:3px;width:17px;height:17px;accent-color:var(--accent);cursor:pointer;flex:0 0 auto;}
+  .task-item .t-body{flex:1;min-width:0;}
+  .task-item .t-title{font-size:.9rem;font-weight:600;display:block;}
+  .task-item.done .t-title{text-decoration:line-through;color:var(--muted);font-weight:500;}
+  .task-item .t-due{font-size:.78rem;color:var(--accent);}
+  .task-item .t-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:.9rem;visibility:hidden;}
+  .task-item:hover .t-del{visibility:visible;}
+
+  .add-task-btn{
+    width:100%;margin-top:14px;border:1px dashed var(--line);background:var(--bg);
+    border-radius:10px;padding:9px;font-size:.85rem;color:var(--muted);cursor:pointer;
+  }
+  .add-task-btn:hover{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);}
+
+  .mini-cal-panel .panel-header button{
+    border:1px solid var(--line);background:var(--surface);width:26px;height:26px;border-radius:7px;cursor:pointer;
+  }
+  .mini-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+  .mini-cal .m-wd{font-size:.7rem;color:var(--muted);padding-bottom:4px;font-weight:600;}
+  .mini-cal .m-day{
+    font-size:.8rem;padding:6px 0;border-radius:8px;cursor:pointer;position:relative;color:var(--ink);
+  }
+  .mini-cal .m-day.other{color:#C7CAD6;}
+  .mini-cal .m-day:hover{background:var(--bg);}
+  .mini-cal .m-day.today{background:var(--accent);color:#fff;font-weight:700;}
+  .mini-cal .m-day.has-events::after{
+    content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--accent);
+  }
+  .mini-cal .m-day.today.has-events::after{background:#fff;}
+
+  /* ---------- Taken (full view) ---------- */
+  .task-list-full{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;}
+  .task-list-full .task-item{padding:10px 4px;border-bottom:1px solid var(--line);}
+
+  textarea#notesArea{
+    width:100%;min-height:340px;border:1px solid var(--line);border-radius:10px;
+    padding:14px;font-family:inherit;font-size:.92rem;resize:vertical;
+  }
+  textarea#notesArea:focus{outline:none;border-color:var(--accent);}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:16px;}
+  .stat-box{background:var(--bg);border-radius:12px;padding:16px;}
+  .stat-box .s-num{font-size:1.8rem;font-weight:800;color:var(--accent);}
+  .stat-box .s-label{font-size:.82rem;color:var(--muted);margin-top:2px;}
+
+  .danger-btn{
+    margin-top:14px;background:#FDEBEB;color:#C0392B;border:1px solid #F5C6C6;
+    padding:9px 16px;border-radius:9px;cursor:pointer;font-weight:600;font-size:.88rem;
+  }
+  .danger-btn:hover{background:#FBDADA;}
+  .muted{color:var(--muted);}
+
+  .swatch-row{display:flex;flex-wrap:wrap;gap:10px;}
+  .swatch{
+    width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .swatch.selected{border-color:var(--ink);}
+  .swatch span{color:inherit;font-size:.9rem;opacity:0;}
+  .swatch.selected span{opacity:1;}
+
+  .category-manage-list{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;}
+  .category-manage-list li{
+    display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);
+  }
+  .cat-dot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;}
+  .category-manage-list .c-name{flex:1;font-size:.9rem;font-weight:600;}
+  .category-manage-list .c-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:.9rem;}
+  .category-manage-list .c-del:hover{color:#C0392B;}
+
+  @media (max-width: 1100px){
+    .right-panel{display:none;}
+  }
+  @media (max-width: 800px){
+    .sidebar{width:70px;flex:0 0 70px;padding:20px 8px;}
+    .sidebar .brand span:last-child,.nav-item span.lbl{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">🗓️</span><span>StudyPlan</span></div>
+    <nav class="side-nav">
+      <button class="nav-item active" data-view="agenda">🗓️ <span class="lbl">Agenda</span></button>
+      <button class="nav-item" data-view="taken">✅ <span class="lbl">Taken</span></button>
+      <button class="nav-item" data-view="notities">📝 <span class="lbl">Notities</span></button>
+      <button class="nav-item" data-view="statistieken">📊 <span class="lbl">Statistieken</span></button>
+      <button class="nav-item" data-view="instellingen">⚙️ <span class="lbl">Instellingen</span></button>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-header">
+      <div>
+        <h1 id="greeting">Goedemorgen!</h1>
+        <p>Maak vandaag weer een stap richting je doelen.</p>
+      </div>
+      <div class="header-right">
+        <input class="search" placeholder="Zoek..." id="searchInput">
+      </div>
+    </header>
+
+    <section id="view-agenda" class="view active">
+      <div class="agenda-card">
+        <div class="agenda-toolbar">
+          <div class="week-nav">
+            <button id="prevWeek">‹</button>
+            <button id="nextWeek">›</button>
+            <span id="weekLabel"></span>
+          </div>
+          <div class="toolbar-right">
+            <button id="todayBtn" class="chip-btn active">Vandaag</button>
+            <button id="addEventBtn" class="add-btn" title="Afspraak toevoegen">+</button>
+          </div>
+        </div>
+        <div class="week-grid" id="weekGrid"></div>
+      </div>
+    </section>
+
+    <section id="view-taken" class="view">
+      <div class="card-panel">
+        <div class="panel-header">
+          <h2 style="margin:0;font-size:1.2rem;">Alle taken</h2>
+          <button id="addTaskBtn2" class="add-btn" title="Taak toevoegen">+</button>
+        </div>
+        <ul id="allTasksList" class="task-list-full"></ul>
+      </div>
+    </section>
+
+    <section id="view-notities" class="view">
+      <div class="card-panel">
+        <h2 style="margin-top:0;font-size:1.2rem;">Notities</h2>
+        <textarea id="notesArea" placeholder="Schrijf hier je notities..."></textarea>
+      </div>
+    </section>
+
+    <section id="view-statistieken" class="view">
+      <div class="card-panel">
+        <h2 style="margin-top:0;font-size:1.2rem;">Statistieken</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+    </section>
+
+    <section id="view-instellingen" class="view">
+      <div class="card-panel">
+        <h2 style="margin-top:0;font-size:1.2rem;">Instellingen</h2>
+        <p class="muted">Al je afspraken, taken en notities worden lokaal in je browser opgeslagen (localStorage). Er wordt niets naar een server verstuurd.</p>
+        <button id="clearDataBtn" class="danger-btn">Wis alle gegevens</button>
+      </div>
+      <div class="card-panel" style="margin-top:18px;">
+        <div class="panel-header">
+          <h2 style="margin:0;font-size:1.2rem;">Categorieën</h2>
+          <button id="addCatFromSettings" class="add-btn" title="Categorie toevoegen">+</button>
+        </div>
+        <ul id="categoryManageList" class="category-manage-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <aside class="right-panel">
+    <div class="card-panel tasks-panel">
+      <div class="panel-header">
+        <h3>Taken</h3>
+        <a href="#" id="viewAllTasks">Alles bekijken →</a>
+      </div>
+      <ul id="taskList" class="task-list"></ul>
+      <button id="addTaskBtn" class="add-task-btn">+ Taak toevoegen</button>
+    </div>
+
+    <div class="card-panel mini-cal-panel">
+      <div class="panel-header">
+        <h3 id="miniCalLabel"></h3>
+        <div>
+          <button id="miniPrev">‹</button>
+          <button id="miniNext">›</button>
+        </div>
+      </div>
+      <div class="mini-cal" id="miniCal"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- Event modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="eventForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Afspraak toevoegen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Titel</label>
+            <input type="text" class="form-control" id="evTitle" required placeholder="Bijv. Wiskunde">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Omschrijving (optioneel)</label>
+            <input type="text" class="form-control" id="evSub" placeholder="Bijv. Hoorcollege">
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Categorie</label>
+              <div class="d-flex gap-2">
+                <select class="form-select" id="evCat"></select>
+                <button type="button" class="btn btn-outline-secondary" id="addCatFromEvent" title="Nieuwe categorie">+</button>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Dag</label>
+              <input type="date" class="form-control" id="evDate" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Starttijd</label>
+              <input type="time" class="form-control" id="evStart" required>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Eindtijd</label>
+              <input type="time" class="form-control" id="evEnd" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-danger d-none me-auto" id="evDeleteBtn">Verwijderen</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuleren</button>
+          <button type="submit" class="btn btn-primary">Opslaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Task modal -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="taskForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Taak toevoegen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Titel</label>
+            <input type="text" class="form-control" id="taskTitle" required placeholder="Bijv. Samenvatting maken">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Deadline (optioneel)</label>
+            <input type="date" class="form-control" id="taskDue">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuleren</button>
+          <button type="submit" class="btn btn-primary">Toevoegen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Category modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="categoryForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Categorie toevoegen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Naam</label>
+            <input type="text" class="form-control" id="catName" required placeholder="Bijv. Muziekles">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Kleur</label>
+            <div class="swatch-row" id="swatchRow"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuleren</button>
+          <button type="submit" class="btn btn-primary">Toevoegen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal (custom, replaces native browser confirm) -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmTitle">Weet je het zeker?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage" class="mb-0"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuleren</button>
+        <button type="button" class="btn btn-danger" id="confirmOkBtn">Verwijderen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Storage ---------------- */
+  const LS_EVENTS = "studyplan_events";
+  const LS_TASKS  = "studyplan_tasks";
+  const LS_NOTES  = "studyplan_notes";
+  const LS_CATEGORIES = "studyplan_categories";
+
+  const PALETTE = [
+    {bg:"#DCE8FF", text:"#1D4ED8"},
+    {bg:"#FBE1E4", text:"#BE123C"},
+    {bg:"#DCF3E4", text:"#15803D"},
+    {bg:"#FDF0D5", text:"#B45309"},
+    {bg:"#EAE1FB", text:"#6D28D9"},
+    {bg:"#E7E9F0", text:"#374151"},
+    {bg:"#FDE2F3", text:"#A21CAF"},
+    {bg:"#D9F5F3", text:"#0F766E"},
+    {bg:"#FFE8CC", text:"#C2410C"},
+    {bg:"#E0F2FE", text:"#0369A1"},
+  ];
+  function defaultCategories(){
+    return [
+      {id:"wiskunde", name:"Wiskunde", bg:PALETTE[0].bg, text:PALETTE[0].text},
+      {id:"engels", name:"Engels", bg:PALETTE[1].bg, text:PALETTE[1].text},
+      {id:"biologie", name:"Biologie", bg:PALETTE[2].bg, text:PALETTE[2].text},
+      {id:"programmeren", name:"Programmeren", bg:PALETTE[3].bg, text:PALETTE[3].text},
+      {id:"projectwerk", name:"Projectwerk", bg:PALETTE[4].bg, text:PALETTE[4].text},
+      {id:"sport", name:"Sport", bg:PALETTE[2].bg, text:PALETTE[2].text},
+      {id:"overig", name:"Overig", bg:PALETTE[5].bg, text:PALETTE[5].text},
+    ];
+  }
+  function loadCategories(){
+    const raw = localStorage.getItem(LS_CATEGORIES);
+    if(raw) return JSON.parse(raw);
+    return defaultCategories();
+  }
+  function saveCategories(){ localStorage.setItem(LS_CATEGORIES, JSON.stringify(categories)); }
+  function findCategory(id){
+    return categories.find(c=>c.id===id) || {name:"Overig", bg:"#E7E9F0", text:"#374151"};
+  }
+
+  function loadEvents(){
+    const raw = localStorage.getItem(LS_EVENTS);
+    if(raw) return JSON.parse(raw);
+    return seedEvents();
+  }
+  function saveEvents(){ localStorage.setItem(LS_EVENTS, JSON.stringify(events)); }
+  function loadTasks(){
+    const raw = localStorage.getItem(LS_TASKS);
+    if(raw) return JSON.parse(raw);
+    return seedTasks();
+  }
+  function saveTasks(){ localStorage.setItem(LS_TASKS, JSON.stringify(tasks)); }
+  function loadNotes(){ return localStorage.getItem(LS_NOTES) || ""; }
+  function saveNotes(v){ localStorage.setItem(LS_NOTES, v); }
+
+  /* ---------------- Custom confirm modal ---------------- */
+  const confirmModalEl = document.getElementById("confirmModal");
+  const confirmModal = new bootstrap.Modal(confirmModalEl);
+  const confirmOkBtn = document.getElementById("confirmOkBtn");
+  let confirmAction = null;
+  function askConfirm(message, onConfirm, okLabel){
+    document.getElementById("confirmMessage").textContent = message;
+    confirmOkBtn.textContent = okLabel || "Verwijderen";
+    confirmAction = onConfirm;
+    confirmModal.show();
+  }
+  confirmOkBtn.addEventListener("click", ()=>{
+    const action = confirmAction;
+    confirmAction = null;
+    confirmModal.hide();
+    if(action) action();
+  });
+
+  /* ---------------- Categories ---------------- */
+  function populateCategorySelect(selectedId){
+    const sel = document.getElementById("evCat");
+    const prev = selectedId || sel.value;
+    sel.innerHTML = "";
+    categories.forEach(c=>{
+      const opt = document.createElement("option");
+      opt.value = c.id; opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+    if(categories.some(c=>c.id===prev)) sel.value = prev;
+  }
+
+  const categoryModalEl = document.getElementById("categoryModal");
+  const categoryModal = new bootstrap.Modal(categoryModalEl);
+  const categoryForm = document.getElementById("categoryForm");
+  const swatchRow = document.getElementById("swatchRow");
+  let selectedSwatch = 0;
+  let reopenEventModalAfterCategory = false;
+
+  function buildSwatchRow(){
+    swatchRow.innerHTML = "";
+    PALETTE.forEach((p,i)=>{
+      const sw = document.createElement("div");
+      sw.className = "swatch"+(i===selectedSwatch?" selected":"");
+      sw.style.backgroundColor = p.bg;
+      sw.style.color = p.text;
+      sw.innerHTML = "<span>✓</span>";
+      sw.addEventListener("click", ()=>{
+        selectedSwatch = i;
+        swatchRow.querySelectorAll(".swatch").forEach(s=>s.classList.remove("selected"));
+        sw.classList.add("selected");
+      });
+      swatchRow.appendChild(sw);
+    });
+  }
+
+  function openCategoryModal(){
+    categoryForm.reset();
+    selectedSwatch = Math.floor(Math.random()*PALETTE.length);
+    buildSwatchRow();
+    categoryModal.show();
+  }
+
+  document.getElementById("addCatFromEvent").addEventListener("click", ()=>{
+    reopenEventModalAfterCategory = true;
+    eventModal.hide();
+    openCategoryModal();
+  });
+  document.getElementById("addCatFromSettings").addEventListener("click", ()=>{
+    reopenEventModalAfterCategory = false;
+    openCategoryModal();
+  });
+  categoryModalEl.addEventListener("hidden.bs.modal", ()=>{
+    if(reopenEventModalAfterCategory){
+      reopenEventModalAfterCategory = false;
+      eventModal.show();
+    }
+  });
+
+  categoryForm.addEventListener("submit", e=>{
+    e.preventDefault();
+    const name = document.getElementById("catName").value.trim();
+    if(!name) return;
+    const color = PALETTE[selectedSwatch];
+    const newCat = {id:cid(), name, bg:color.bg, text:color.text};
+    categories.push(newCat);
+    saveCategories();
+    populateCategorySelect(newCat.id);
+    renderCategoryList();
+    renderWeekGrid();
+    categoryModal.hide();
+  });
+
+  function renderCategoryList(){
+    const list = document.getElementById("categoryManageList");
+    list.innerHTML = "";
+    categories.forEach(c=>{
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <span class="cat-dot" style="background:${c.bg}"></span>
+        <span class="c-name">${escapeHtml(c.name)}</span>
+        <button class="c-del" title="Verwijderen">✕</button>
+      `;
+      li.querySelector(".c-del").addEventListener("click", ()=>{
+        askConfirm(`Categorie "${c.name}" verwijderen? Afspraken met deze categorie krijgen een standaardkleur.`, ()=>{
+          categories = categories.filter(x=>x.id!==c.id);
+          saveCategories();
+          populateCategorySelect();
+          renderCategoryList();
+          renderWeekGrid();
+        });
+      });
+      list.appendChild(li);
+    });
+    if(categories.length===0){
+      list.innerHTML = `<li class="muted" style="padding:10px 4px;">Nog geen categorieën.</li>`;
+    }
+  }
+
+  /* ---------------- Date helpers ---------------- */
+  function fmtISO(d){
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+  function startOfWeek(d){
+    const day = (d.getDay()+6)%7; // Monday = 0
+    const res = new Date(d);
+    res.setDate(d.getDate()-day);
+    res.setHours(0,0,0,0);
+    return res;
+  }
+  function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+  const WEEKDAY_SHORT = ["Ma","Di","Wo","Do","Vr","Za","Zo"];
+  const MONTHS = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+
+  function seedEvents(){
+    return [];
+  }
+  function seedTasks(){
+    return [];
+  }
+  function cid(){ return "id-"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+  /* ---------------- State ---------------- */
+  let events = loadEvents();
+  let tasks = loadTasks();
+  let categories = loadCategories();
+  let currentWeekStart = startOfWeek(new Date());
+  let miniCalMonth = new Date(); miniCalMonth.setDate(1);
+  let editingEventId = null;
+
+  /* ---------------- Greeting ---------------- */
+  (function greet(){
+    const h = new Date().getHours();
+    const el = document.getElementById("greeting");
+    el.textContent = h<12 ? "Goedemorgen!" : h<18 ? "Goedemiddag!" : "Goedenavond!";
+  })();
+
+  /* ---------------- Navigation between views ---------------- */
+  document.querySelectorAll(".nav-item").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const view = btn.dataset.view;
+      document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+      document.getElementById("view-"+view).classList.add("active");
+      if(view==="taken") renderAllTasks();
+      if(view==="notities") document.getElementById("notesArea").value = loadNotes();
+      if(view==="statistieken") renderStats();
+      if(view==="instellingen") renderCategoryList();
+    });
+  });
+  document.getElementById("viewAllTasks").addEventListener("click", e=>{
+    e.preventDefault();
+    document.querySelector('.nav-item[data-view="taken"]').click();
+  });
+
+  /* ---------------- Week grid rendering ---------------- */
+  const START_HOUR = 7, END_HOUR = 22;
+  const HOUR_H = 56;
+
+  function renderWeekLabel(){
+    const start = currentWeekStart, end = addDays(start,6);
+    const sameMonth = start.getMonth()===end.getMonth();
+    const label = sameMonth
+      ? `${start.getDate()} – ${end.getDate()} ${MONTHS[end.getMonth()]} ${end.getFullYear()}`
+      : `${start.getDate()} ${MONTHS[start.getMonth()]} – ${end.getDate()} ${MONTHS[end.getMonth()]} ${end.getFullYear()}`;
+    document.getElementById("weekLabel").textContent = label;
+    const isCurrent = fmtISO(startOfWeek(new Date()))===fmtISO(currentWeekStart);
+    document.getElementById("todayBtn").classList.toggle("active", isCurrent);
+  }
+
+  function renderWeekGrid(){
+    renderWeekLabel();
+    const grid = document.getElementById("weekGrid");
+    grid.innerHTML = "";
+    const todayISO = fmtISO(new Date());
+
+    // corner
+    const corner = document.createElement("div");
+    corner.className = "grid-corner";
+    grid.appendChild(corner);
+
+    // day headers
+    const dayDates = [];
+    for(let i=0;i<7;i++){
+      const d = addDays(currentWeekStart,i);
+      dayDates.push(d);
+      const iso = fmtISO(d);
+      const head = document.createElement("div");
+      head.className = "day-head" + (iso===todayISO ? " is-today" : "");
+      head.innerHTML = `${WEEKDAY_SHORT[i]}<span class="d-num">${d.getDate()}</span>`;
+      grid.appendChild(head);
+    }
+
+    // time column
+    const timeCol = document.createElement("div");
+    timeCol.className = "time-col";
+    timeCol.style.height = ((END_HOUR-START_HOUR)*HOUR_H)+"px";
+    for(let h=START_HOUR; h<END_HOUR; h++){
+      const slot = document.createElement("div");
+      slot.className = "time-slot";
+      slot.textContent = String(h).padStart(2,"0")+":00";
+      timeCol.appendChild(slot);
+    }
+    grid.appendChild(timeCol);
+
+    // day columns
+    dayDates.forEach((d,i)=>{
+      const iso = fmtISO(d);
+      const col = document.createElement("div");
+      col.className = "day-col" + (iso===todayISO ? " is-today" : "");
+      col.style.height = ((END_HOUR-START_HOUR)*HOUR_H)+"px";
+      col.dataset.date = iso;
+
+      col.addEventListener("click", (e)=>{
+        if(e.target!==col) return;
+        const rect = col.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        let minutesFromStart = Math.round(((y/HOUR_H)*60)/15)*15;
+        let totalMin = START_HOUR*60 + minutesFromStart;
+        totalMin = Math.max(START_HOUR*60, Math.min((END_HOUR-1)*60, totalMin));
+        openEventModal(null, iso, minutesToTime(totalMin), minutesToTime(totalMin+60));
+      });
+
+      // now-line
+      if(iso===todayISO){
+        const now = new Date();
+        const mins = now.getHours()*60+now.getMinutes();
+        if(mins>=START_HOUR*60 && mins<=END_HOUR*60){
+          const line = document.createElement("div");
+          line.className = "now-line";
+          line.style.top = (((mins-START_HOUR*60)/60)*HOUR_H)+"px";
+          col.appendChild(line);
+        }
+      }
+
+      // events for this day
+      events.filter(ev=>ev.date===iso).forEach(ev=>{
+        const startMin = timeToMinutes(ev.start), endMin = timeToMinutes(ev.end);
+        const top = ((startMin-START_HOUR*60)/60)*HOUR_H;
+        const height = Math.max(((endMin-startMin)/60)*HOUR_H, 22);
+        const block = document.createElement("div");
+        block.className = "event-block";
+        const cat = findCategory(ev.cat);
+        block.style.backgroundColor = cat.bg;
+        block.style.color = cat.text;
+        block.style.top = top+"px";
+        block.style.height = height+"px";
+        block.innerHTML = `<span class="ev-time">${ev.start} – ${ev.end}</span><span class="ev-title">${escapeHtml(ev.title)}</span>${ev.sub?`<span class="ev-sub">${escapeHtml(ev.sub)}</span>`:""}`;
+        block.addEventListener("click", (e)=>{ e.stopPropagation(); openEventModal(ev.id); });
+        col.appendChild(block);
+      });
+
+      grid.appendChild(col);
+    });
+  }
+
+  function timeToMinutes(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+  function minutesToTime(mins){ const h=Math.floor(mins/60), m=mins%60; return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0"); }
+  function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+  document.getElementById("prevWeek").addEventListener("click", ()=>{ currentWeekStart=addDays(currentWeekStart,-7); renderWeekGrid(); renderMiniCal(); });
+  document.getElementById("nextWeek").addEventListener("click", ()=>{ currentWeekStart=addDays(currentWeekStart,7); renderWeekGrid(); renderMiniCal(); });
+  document.getElementById("todayBtn").addEventListener("click", ()=>{
+    currentWeekStart = startOfWeek(new Date());
+    miniCalMonth = new Date(); miniCalMonth.setDate(1);
+    renderWeekGrid(); renderMiniCal();
+  });
+
+  /* ---------------- Event modal ---------------- */
+  const eventModalEl = document.getElementById("eventModal");
+  const eventModal = new bootstrap.Modal(eventModalEl);
+  const eventForm = document.getElementById("eventForm");
+  const evDeleteBtn = document.getElementById("evDeleteBtn");
+
+  document.getElementById("addEventBtn").addEventListener("click", ()=> openEventModal(null, fmtISO(new Date())));
+
+  function openEventModal(id, presetDate, presetStart, presetEnd){
+    editingEventId = id;
+    eventForm.reset();
+    populateCategorySelect();
+    if(id){
+      const ev = events.find(e=>e.id===id);
+      document.querySelector("#eventModal .modal-title").textContent = "Afspraak bewerken";
+      document.getElementById("evTitle").value = ev.title;
+      document.getElementById("evSub").value = ev.sub||"";
+      document.getElementById("evCat").value = ev.cat;
+      document.getElementById("evDate").value = ev.date;
+      document.getElementById("evStart").value = ev.start;
+      document.getElementById("evEnd").value = ev.end;
+      evDeleteBtn.classList.remove("d-none");
+    } else {
+      document.querySelector("#eventModal .modal-title").textContent = "Afspraak toevoegen";
+      document.getElementById("evDate").value = presetDate || fmtISO(new Date());
+      document.getElementById("evStart").value = presetStart || "09:00";
+      document.getElementById("evEnd").value = presetEnd || "10:00";
+      evDeleteBtn.classList.add("d-none");
+    }
+    eventModal.show();
+  }
+
+  eventForm.addEventListener("submit", e=>{
+    e.preventDefault();
+    const data = {
+      title: document.getElementById("evTitle").value.trim(),
+      sub: document.getElementById("evSub").value.trim(),
+      cat: document.getElementById("evCat").value,
+      date: document.getElementById("evDate").value,
+      start: document.getElementById("evStart").value,
+      end: document.getElementById("evEnd").value,
+    };
+    if(data.end <= data.start){ alert("Eindtijd moet na starttijd liggen."); return; }
+    if(editingEventId){
+      const ev = events.find(e=>e.id===editingEventId);
+      Object.assign(ev, data);
+    } else {
+      events.push({id:cid(), ...data});
+    }
+    saveEvents();
+    eventModal.hide();
+    currentWeekStart = startOfWeek(new Date(data.date+"T00:00:00"));
+    renderWeekGrid(); renderMiniCal();
+  });
+
+  evDeleteBtn.addEventListener("click", ()=>{
+    if(!editingEventId) return;
+    askConfirm("Deze afspraak verwijderen?", ()=>{
+      events = events.filter(e=>e.id!==editingEventId);
+      saveEvents();
+      eventModal.hide();
+      renderWeekGrid(); renderMiniCal();
+    });
+  });
+
+  /* ---------------- Tasks ---------------- */
+  function dueLabel(due){
+    if(!due) return "";
+    const today = fmtISO(new Date()), tomorrow = fmtISO(addDays(new Date(),1));
+    if(due===today) return "Vandaag";
+    if(due===tomorrow) return "Morgen";
+    const d = new Date(due+"T00:00:00");
+    return d.getDate()+" "+MONTHS[d.getMonth()];
+  }
+
+  function renderTaskItem(t, full){
+    const li = document.createElement("li");
+    li.className = "task-item"+(t.done?" done":"");
+    li.innerHTML = `
+      <input type="checkbox" ${t.done?"checked":""}>
+      <div class="t-body">
+        <span class="t-title">${escapeHtml(t.title)}</span>
+        ${t.due?`<span class="t-due">${dueLabel(t.due)}</span>`:""}
+      </div>
+      <button class="t-del" title="Verwijderen">✕</button>
+    `;
+    li.querySelector("input").addEventListener("change", (e)=>{
+      t.done = e.target.checked;
+      saveTasks();
+      renderTasks(); renderAllTasks(); renderStats();
+    });
+    li.querySelector(".t-del").addEventListener("click", ()=>{
+      askConfirm("Deze taak verwijderen?", ()=>{
+        tasks = tasks.filter(x=>x.id!==t.id);
+        saveTasks();
+        renderTasks(); renderAllTasks(); renderStats();
+      });
+    });
+    return li;
+  }
+
+  function renderTasks(){
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+    const sorted = [...tasks].sort((a,b)=> (a.done-b.done) || (a.due||"9999").localeCompare(b.due||"9999"));
+    sorted.slice(0,6).forEach(t=> list.appendChild(renderTaskItem(t)));
+    if(tasks.length===0){
+      list.innerHTML = `<li class="muted" style="font-size:.85rem;">Nog geen taken. Voeg er een toe!</li>`;
+    }
+  }
+  function renderAllTasks(){
+    const list = document.getElementById("allTasksList");
+    list.innerHTML = "";
+    const sorted = [...tasks].sort((a,b)=> (a.done-b.done) || (a.due||"9999").localeCompare(b.due||"9999"));
+    sorted.forEach(t=> list.appendChild(renderTaskItem(t, true)));
+    if(tasks.length===0){
+      list.innerHTML = `<li class="muted" style="padding:10px 4px;">Nog geen taken. Voeg er een toe!</li>`;
+    }
+  }
+
+  const taskModalEl = document.getElementById("taskModal");
+  const taskModal = new bootstrap.Modal(taskModalEl);
+  const taskForm = document.getElementById("taskForm");
+  function openTaskModal(){ taskForm.reset(); taskModal.show(); }
+  document.getElementById("addTaskBtn").addEventListener("click", openTaskModal);
+  document.getElementById("addTaskBtn2").addEventListener("click", openTaskModal);
+
+  taskForm.addEventListener("submit", e=>{
+    e.preventDefault();
+    const title = document.getElementById("taskTitle").value.trim();
+    const due = document.getElementById("taskDue").value;
+    if(!title) return;
+    tasks.push({id:cid(), title, due: due||null, done:false});
+    saveTasks();
+    taskModal.hide();
+    renderTasks(); renderAllTasks(); renderStats();
+  });
+
+  /* ---------------- Mini calendar ---------------- */
+  function renderMiniCal(){
+    document.getElementById("miniCalLabel").textContent = MONTHS[miniCalMonth.getMonth()][0].toUpperCase()+MONTHS[miniCalMonth.getMonth()].slice(1)+" "+miniCalMonth.getFullYear();
+    const cal = document.getElementById("miniCal");
+    cal.innerHTML = "";
+    WEEKDAY_SHORT.forEach(w=>{
+      const el = document.createElement("div");
+      el.className="m-wd"; el.textContent=w;
+      cal.appendChild(el);
+    });
+    const firstOfMonth = new Date(miniCalMonth);
+    const gridStart = startOfWeek(firstOfMonth);
+    const todayISO = fmtISO(new Date());
+    const eventDates = new Set(events.map(e=>e.date));
+
+    for(let i=0;i<42;i++){
+      const d = addDays(gridStart,i);
+      const iso = fmtISO(d);
+      const el = document.createElement("div");
+      let cls = "m-day";
+      if(d.getMonth()!==miniCalMonth.getMonth()) cls+=" other";
+      if(iso===todayISO) cls+=" today";
+      if(eventDates.has(iso)) cls+=" has-events";
+      el.className = cls;
+      el.textContent = d.getDate();
+      el.addEventListener("click", ()=>{
+        currentWeekStart = startOfWeek(d);
+        document.querySelector('.nav-item[data-view="agenda"]').click();
+        renderWeekGrid();
+      });
+      cal.appendChild(el);
+      if(i>=34 && d.getMonth()!==miniCalMonth.getMonth() && i%7===6) break;
+    }
+  }
+  document.getElementById("miniPrev").addEventListener("click", ()=>{
+    miniCalMonth.setMonth(miniCalMonth.getMonth()-1); renderMiniCal();
+  });
+  document.getElementById("miniNext").addEventListener("click", ()=>{
+    miniCalMonth.setMonth(miniCalMonth.getMonth()+1); renderMiniCal();
+  });
+
+  /* ---------------- Notities ---------------- */
+  const notesArea = document.getElementById("notesArea");
+  let notesTimer=null;
+  notesArea.addEventListener("input", ()=>{
+    clearTimeout(notesTimer);
+    notesTimer = setTimeout(()=> saveNotes(notesArea.value), 300);
+  });
+
+  /* ---------------- Statistieken ---------------- */
+  function renderStats(){
+    const grid = document.getElementById("statsGrid");
+    const totalTasks = tasks.length;
+    const doneTasks = tasks.filter(t=>t.done).length;
+    const weekEvents = events.filter(e=>{
+      const d = new Date(e.date+"T00:00:00");
+      return d>=currentWeekStart && d<addDays(currentWeekStart,7);
+    }).length;
+    const todayISO = fmtISO(new Date());
+    const todayEvents = events.filter(e=>e.date===todayISO).length;
+    const pct = totalTasks? Math.round((doneTasks/totalTasks)*100) : 0;
+
+    grid.innerHTML = `
+      <div class="stat-box"><div class="s-num">${weekEvents}</div><div class="s-label">Afspraken deze week</div></div>
+      <div class="stat-box"><div class="s-num">${todayEvents}</div><div class="s-label">Afspraken vandaag</div></div>
+      <div class="stat-box"><div class="s-num">${doneTasks}/${totalTasks}</div><div class="s-label">Taken afgerond</div></div>
+      <div class="stat-box"><div class="s-num">${pct}%</div><div class="s-label">Voortgang taken</div></div>
+    `;
+  }
+
+  /* ---------------- Instellingen ---------------- */
+  document.getElementById("clearDataBtn").addEventListener("click", ()=>{
+    askConfirm("Weet je zeker dat je alle afspraken, taken en notities wilt wissen? Dit kan niet ongedaan gemaakt worden.", ()=>{
+      localStorage.removeItem(LS_EVENTS);
+      localStorage.removeItem(LS_TASKS);
+      localStorage.removeItem(LS_NOTES);
+      events = seedEvents(); saveEvents();
+      tasks = seedTasks(); saveTasks();
+      notesArea.value = "";
+      renderWeekGrid(); renderTasks(); renderAllTasks(); renderMiniCal(); renderStats();
+    }, "Alles wissen");
+  });
+
+  /* ---------------- Init ---------------- */
+  renderWeekGrid();
+  renderTasks();
+  renderMiniCal();
+  saveEvents();
+  saveTasks();
+  saveCategories();
+})();
+</script>
+</body>
+</html>
