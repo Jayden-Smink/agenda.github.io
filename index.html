@@ -2,8 +2,20 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>StudyPlan – Planning</title>
+
+<!-- PWA: hiermee kan de pagina als app op het beginscherm gezet worden -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3E63DD">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<!-- iOS: opent zonder Safari-balk, met eigen icoon en naam -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StudyPlan">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -920,8 +932,26 @@
   });
 
   /* ---------------- Week grid rendering ---------------- */
-  const START_HOUR = 0, END_HOUR = 24;
+  const DEFAULT_START_HOUR = 7, DEFAULT_END_HOUR = 21;
   const HOUR_H = 56;
+
+  // Bepaalt het te tonen uurbereik. Standaard 07:00–21:00, maar dat venster
+  // wordt automatisch verruimd als er een afspraak vóór 07:00 begint (schema
+  // start dan eerder) of na 21:00 doorloopt (schema eindigt dan later). Het
+  // krimpt nooit kleiner dan het standaard dagdeel.
+  function computeHourRange(eventsList){
+    let start = DEFAULT_START_HOUR, end = DEFAULT_END_HOUR;
+    eventsList.forEach(ev=>{
+      const s = Math.floor(timeToMinutes(ev.start)/60);
+      const e = Math.ceil(timeToMinutes(ev.end)/60);
+      if(s<start) start = s;
+      if(e>end) end = e;
+    });
+    start = Math.max(0, start);
+    end = Math.min(24, end);
+    if(end<=start) end = start+1;
+    return {start, end};
+  }
 
   function renderWeekLabel(){
     const start = currentWeekStart, end = addDays(start,6);
@@ -956,6 +986,12 @@
     renderWeekLabel();
     const grid = document.getElementById("weekGrid");
     grid.innerHTML = "";
+
+    // Uurbereik voor deze week: gebaseerd op alle afspraken die in de 7
+    // getoonde dagen vallen.
+    const weekDateSet = new Set(dayDates.map(fmtISO));
+    const weekEvents = events.filter(ev=>weekDateSet.has(ev.date));
+    const {start: START_HOUR, end: END_HOUR} = computeHourRange(weekEvents);
 
     // corner
     const corner = document.createElement("div");
@@ -1076,6 +1112,7 @@
 
     const sched = document.createElement("div");
     sched.className = "mobile-schedule-grid";
+    const {start: START_HOUR, end: END_HOUR} = computeHourRange(dayEvents);
     sched.style.height = ((END_HOUR-START_HOUR)*HOUR_H)+"px";
 
     const timeCol = document.createElement("div");
@@ -1395,6 +1432,13 @@
       openEventModal(null, fmtISO(mobileSelectedDate));
     }
   });
+
+  /* ---------------- PWA: service worker registreren ---------------- */
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("sw.js").catch(()=>{ /* geen probleem, app werkt ook zonder */ });
+    });
+  }
 
   /* ---------------- Init ---------------- */
   renderWeekGrid();

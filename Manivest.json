@@ -1,0 +1,17 @@
+{
+  "name": "StudyPlan",
+  "short_name": "StudyPlan",
+  "description": "Persoonlijke planner voor school: agenda, taken, notities en statistieken.",
+  "start_url": "./studyplan.html",
+  "scope": "./",
+  "id": "./studyplan.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F5F6FA",
+  "theme_color": "#3E63DD",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
