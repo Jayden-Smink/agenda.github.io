@@ -376,11 +376,10 @@
     /* Oude groet/zoek-header vervangen door de mobile-topbar hierboven */
     .top-header{display:none;}
 
-    .right-panel{
-      flex-direction:column;flex-wrap:nowrap;
-      padding:0 14px 24px;gap:16px;
-    }
-    .mini-cal-panel{max-width:none;}
+    /* Rechterpaneel (mini-kalender + snel-taak-toevoegen) stond op elk tabblad
+       onderaan te herhalen — op telefoon helemaal verbergen, de FAB en de
+       Taken-/Agenda-tabbladen dekken deze functies al. */
+    .right-panel{display:none;}
 
     .agenda-card{background:transparent;border:none;padding:0 16px 18px;}
     .agenda-toolbar{gap:8px;align-items:center;}
@@ -921,7 +920,7 @@
   });
 
   /* ---------------- Week grid rendering ---------------- */
-  const START_HOUR = 7, END_HOUR = 22;
+  const START_HOUR = 0, END_HOUR = 24;
   const HOUR_H = 56;
 
   function renderWeekLabel(){
