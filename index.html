@@ -253,6 +253,56 @@
   .category-manage-list .c-del{border:none;background:none;color:var(--muted);cursor:pointer;font-size:.9rem;}
   .category-manage-list .c-del:hover{color:#C0392B;}
 
+  /* ---------- Mobiele topbar / drawer / FAB (standaard verborgen) ---------- */
+  .mobile-topbar{
+    display:none;
+    align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:1020;
+    background:var(--surface);border-bottom:1px solid var(--line);
+    padding:14px 16px;
+  }
+  .mobile-menu-btn{
+    border:none;background:var(--bg);width:36px;height:36px;border-radius:9px;
+    font-size:1.1rem;color:var(--ink);cursor:pointer;
+  }
+  .mobile-brand{font-weight:800;font-size:1.15rem;color:var(--ink);}
+  .mobile-brand span{color:var(--accent);}
+  .mobile-topbar-spacer{width:36px;}
+
+  .mobile-drawer-overlay{
+    display:none;position:fixed;inset:0;background:rgba(20,25,50,.35);z-index:1040;
+  }
+  .mobile-drawer-overlay.open{display:block;}
+  .mobile-drawer{
+    display:none;position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;
+    background:var(--surface);z-index:1041;padding:20px;
+    flex-direction:column;gap:14px;
+    box-shadow:2px 0 18px rgba(20,25,50,.12);
+    transform:translateX(-100%);transition:transform .2s ease;
+  }
+  .mobile-drawer.open{display:flex;transform:translateX(0);}
+  .mobile-drawer-header{display:flex;align-items:center;justify-content:space-between;}
+  .mobile-drawer-close{border:none;background:var(--bg);width:30px;height:30px;border-radius:8px;cursor:pointer;color:var(--ink);}
+  .drawer-link{
+    display:flex;align-items:center;gap:10px;border:none;background:var(--bg);
+    padding:11px 12px;border-radius:10px;font-size:.92rem;font-weight:600;color:var(--ink);
+    cursor:pointer;text-align:left;
+  }
+  .drawer-link:hover{background:var(--accent-soft);color:var(--accent);}
+
+  .mobile-fab{
+    display:none;position:fixed;right:18px;bottom:86px;z-index:1010;
+    width:56px;height:56px;border-radius:50%;border:none;
+    background:var(--accent);color:#fff;font-size:1.6rem;line-height:1;
+    box-shadow:0 8px 20px rgba(62,99,221,.35);cursor:pointer;
+  }
+  .mobile-fab:hover{filter:brightness(1.05);}
+
+  #weekLabelMobile{display:none;}
+
+  .mobile-day-picker{display:none;}
+  .mobile-day-schedule{display:none;}
+
   /* =====================================================
      RESPONSIVE — iPad / tablet (≤1024px)
      Sidebar wordt een horizontale bovenbalk, het rechter-
@@ -300,6 +350,10 @@
   @media (max-width: 620px){
     body{padding-bottom:0;}
 
+    /* Topbar, drawer en floating actieknop actief op telefoon */
+    .mobile-topbar{display:flex;}
+    .mobile-fab{display:flex;align-items:center;justify-content:center;}
+
     .sidebar{
       position:fixed;left:0;right:0;bottom:0;top:auto;
       z-index:1030;
@@ -314,13 +368,13 @@
       gap:2px;padding:6px 2px;border-radius:10px;
     }
     .nav-item span.lbl{display:block;font-size:.62rem;line-height:1;}
+    /* Instellingen zit op mobiel in het uitschuifmenu i.p.v. de onderbalk */
+    .nav-item[data-view="instellingen"]{display:none;}
 
-    .main-content{padding:18px 14px 90px;}
+    .main-content{padding:14px 0 90px;}
 
-    .top-header{flex-direction:column;align-items:stretch;gap:10px;margin-bottom:16px;}
-    .top-header h1{font-size:1.4rem;}
-    .header-right{width:100%;}
-    .search{width:100%;}
+    /* Oude groet/zoek-header vervangen door de mobile-topbar hierboven */
+    .top-header{display:none;}
 
     .right-panel{
       flex-direction:column;flex-wrap:nowrap;
@@ -328,26 +382,74 @@
     }
     .mini-cal-panel{max-width:none;}
 
-    .agenda-card{padding:14px 12px 18px;}
-    .agenda-toolbar{gap:8px;}
-    #weekLabel{font-size:.92rem;}
+    .agenda-card{background:transparent;border:none;padding:0 16px 18px;}
+    .agenda-toolbar{gap:8px;align-items:center;}
+    .week-nav{gap:8px;}
+    #weekLabel{display:none;}
+    #weekLabelMobile{display:inline-block;font-weight:800;font-size:1.4rem;}
     .chip-btn{padding:6px 12px;font-size:.82rem;}
+    #addEventBtn{display:none;}
 
-    .week-grid{
-      grid-template-columns:44px repeat(7,minmax(86px,1fr));
-      min-width:646px;
+    /* Weekrooster (7 kolommen) uit op telefoon, dag-weergave aan */
+    .week-grid{display:none;}
+    .mobile-day-picker{
+      display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      padding:14px 0 12px;scrollbar-width:none;
     }
-    .day-head{font-size:.7rem;padding:8px 2px;}
-    .day-head .d-num{font-size:.85rem;}
-    .time-slot{font-size:.62rem;padding-right:4px;}
-    .event-block{padding:4px 5px;font-size:.68rem;}
-    .event-block .ev-time{font-size:.6rem;}
+    .mobile-day-picker::-webkit-scrollbar{display:none;}
+    .day-chip{
+      flex:1 1 0;min-width:42px;display:flex;flex-direction:column;align-items:center;gap:2px;
+      border:1px solid var(--line);background:var(--surface);border-radius:12px;
+      padding:8px 4px;cursor:pointer;color:var(--ink);
+    }
+    .day-chip .dc-wd{font-size:.72rem;color:var(--muted);font-weight:600;}
+    .day-chip .dc-num{font-size:1rem;font-weight:700;}
+    .day-chip.is-today .dc-wd,.day-chip.is-today .dc-num{color:var(--accent);}
+    .day-chip.active{background:var(--accent);border-color:var(--accent);}
+    .day-chip.active .dc-wd,.day-chip.active .dc-num{color:#fff;}
+
+    .mobile-day-schedule{display:block;border-top:1px solid var(--line);padding-top:6px;}
+    .mobile-schedule-grid{display:flex;position:relative;}
+    .mobile-schedule-grid .time-col{width:52px;flex:0 0 52px;}
+    .mobile-schedule-grid .day-col{
+      flex:1;background-image:linear-gradient(var(--line) 1px, transparent 1px);
+      background-size:100% 56px;
+    }
+    .mobile-schedule-grid .event-block{font-size:.78rem;padding:6px 8px;}
+
+    .mobile-empty-state{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;padding:70px 20px;color:var(--muted);
+    }
+    .mes-icon{font-size:2.4rem;margin-bottom:14px;opacity:.6;}
+    .mes-title{font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px;}
+    .mes-sub{font-size:.88rem;}
 
     .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .card-panel{padding:18px 16px;}
   }
 </style>
 </head>
 <body>
+
+<header class="mobile-topbar">
+  <button type="button" id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Menu">☰</button>
+  <div class="mobile-brand">Study<span>Plan</span></div>
+  <span class="mobile-topbar-spacer" aria-hidden="true"></span>
+</header>
+
+<div id="mobileDrawerOverlay" class="mobile-drawer-overlay"></div>
+<aside id="mobileDrawer" class="mobile-drawer">
+  <div class="mobile-drawer-header">
+    <div class="brand"><span class="brand-icon">🗓️</span><span>StudyPlan</span></div>
+    <button type="button" id="mobileDrawerClose" class="mobile-drawer-close" aria-label="Sluiten">✕</button>
+  </div>
+  <input class="search" placeholder="Zoek..." id="searchInputMobile">
+  <button type="button" class="drawer-link" id="drawerInstellingenBtn">⚙️ <span>Instellingen</span></button>
+</aside>
+
+<button type="button" id="mobileFabBtn" class="mobile-fab" title="Toevoegen" aria-label="Toevoegen">+</button>
+
 <div class="app-shell">
 
   <aside class="sidebar">
@@ -379,6 +481,7 @@
             <button id="prevWeek">‹</button>
             <button id="nextWeek">›</button>
             <span id="weekLabel"></span>
+            <span id="weekLabelMobile"></span>
           </div>
           <div class="toolbar-right">
             <button id="todayBtn" class="chip-btn active">Vandaag</button>
@@ -386,6 +489,8 @@
           </div>
         </div>
         <div class="week-grid" id="weekGrid"></div>
+        <div class="mobile-day-picker" id="mobileDayPicker"></div>
+        <div class="mobile-day-schedule" id="mobileDaySchedule"></div>
       </div>
     </section>
 
@@ -787,6 +892,7 @@
   let currentWeekStart = startOfWeek(new Date());
   let miniCalMonth = new Date(); miniCalMonth.setDate(1);
   let editingEventId = null;
+  let mobileSelectedDate = new Date();
 
   /* ---------------- Greeting ---------------- */
   (function greet(){
@@ -827,13 +933,30 @@
     document.getElementById("weekLabel").textContent = label;
     const isCurrent = fmtISO(startOfWeek(new Date()))===fmtISO(currentWeekStart);
     document.getElementById("todayBtn").classList.toggle("active", isCurrent);
+
+    const m = MONTHS[mobileSelectedDate.getMonth()];
+    document.getElementById("weekLabelMobile").textContent =
+      m[0].toUpperCase()+m.slice(1)+" "+mobileSelectedDate.getFullYear();
   }
 
   function renderWeekGrid(){
+    const todayISO = fmtISO(new Date());
+
+    // dagen van de huidige week vooraf berekenen (nodig voor mobiel label + kiezer)
+    const dayDates = [];
+    for(let i=0;i<7;i++) dayDates.push(addDays(currentWeekStart,i));
+
+    // geselecteerde mobiele dag: blijft staan als hij nog in de nieuwe week valt,
+    // anders terug naar vandaag (indien in de week) of anders de eerste dag
+    const stillInWeek = dayDates.some(d=>fmtISO(d)===fmtISO(mobileSelectedDate));
+    if(!stillInWeek){
+      const todayInWeek = dayDates.find(d=>fmtISO(d)===todayISO);
+      mobileSelectedDate = todayInWeek || dayDates[0];
+    }
+
     renderWeekLabel();
     const grid = document.getElementById("weekGrid");
     grid.innerHTML = "";
-    const todayISO = fmtISO(new Date());
 
     // corner
     const corner = document.createElement("div");
@@ -841,16 +964,13 @@
     grid.appendChild(corner);
 
     // day headers
-    const dayDates = [];
-    for(let i=0;i<7;i++){
-      const d = addDays(currentWeekStart,i);
-      dayDates.push(d);
+    dayDates.forEach((d,i)=>{
       const iso = fmtISO(d);
       const head = document.createElement("div");
       head.className = "day-head" + (iso===todayISO ? " is-today" : "");
       head.innerHTML = `${WEEKDAY_SHORT[i]}<span class="d-num">${d.getDate()}</span>`;
       grid.appendChild(head);
-    }
+    });
 
     // time column
     const timeCol = document.createElement("div");
@@ -913,6 +1033,105 @@
 
       grid.appendChild(col);
     });
+
+    renderMobileDayPicker(dayDates, todayISO);
+    renderMobileDaySchedule();
+  }
+
+  /* ---------------- Mobiele dagweergave (telefoon) ---------------- */
+  function renderMobileDayPicker(dayDates, todayISO){
+    const picker = document.getElementById("mobileDayPicker");
+    picker.innerHTML = "";
+    const selISO = fmtISO(mobileSelectedDate);
+    dayDates.forEach((d,i)=>{
+      const iso = fmtISO(d);
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "day-chip" + (iso===selISO ? " active" : "") + (iso===todayISO ? " is-today" : "");
+      chip.innerHTML = `<span class="dc-wd">${WEEKDAY_SHORT[i]}</span><span class="dc-num">${d.getDate()}</span>`;
+      chip.addEventListener("click", ()=>{
+        mobileSelectedDate = d;
+        renderWeekLabel();
+        renderMobileDayPicker(dayDates, todayISO);
+        renderMobileDaySchedule();
+      });
+      picker.appendChild(chip);
+    });
+  }
+
+  function renderMobileDaySchedule(){
+    const wrap = document.getElementById("mobileDaySchedule");
+    wrap.innerHTML = "";
+    const iso = fmtISO(mobileSelectedDate);
+    const dayEvents = events.filter(ev=>ev.date===iso).sort((a,b)=>a.start.localeCompare(b.start));
+
+    if(dayEvents.length===0){
+      wrap.innerHTML = `
+        <div class="mobile-empty-state">
+          <div class="mes-icon">📅</div>
+          <div class="mes-title">Geen afspraken</div>
+          <div class="mes-sub">Tik op de + knop om een afspraak toe te voegen.</div>
+        </div>`;
+      return;
+    }
+
+    const sched = document.createElement("div");
+    sched.className = "mobile-schedule-grid";
+    sched.style.height = ((END_HOUR-START_HOUR)*HOUR_H)+"px";
+
+    const timeCol = document.createElement("div");
+    timeCol.className = "time-col";
+    for(let h=START_HOUR; h<END_HOUR; h++){
+      const slot = document.createElement("div");
+      slot.className = "time-slot";
+      slot.textContent = String(h).padStart(2,"0")+":00";
+      timeCol.appendChild(slot);
+    }
+    sched.appendChild(timeCol);
+
+    const col = document.createElement("div");
+    col.className = "day-col";
+    col.style.height = ((END_HOUR-START_HOUR)*HOUR_H)+"px";
+
+    if(iso===fmtISO(new Date())){
+      const now = new Date();
+      const mins = now.getHours()*60+now.getMinutes();
+      if(mins>=START_HOUR*60 && mins<=END_HOUR*60){
+        const line = document.createElement("div");
+        line.className = "now-line";
+        line.style.top = (((mins-START_HOUR*60)/60)*HOUR_H)+"px";
+        col.appendChild(line);
+      }
+    }
+
+    dayEvents.forEach(ev=>{
+      const startMin = timeToMinutes(ev.start), endMin = timeToMinutes(ev.end);
+      const top = ((startMin-START_HOUR*60)/60)*HOUR_H;
+      const height = Math.max(((endMin-startMin)/60)*HOUR_H, 30);
+      const block = document.createElement("div");
+      block.className = "event-block";
+      const cat = findCategory(ev.cat);
+      block.style.backgroundColor = cat.bg;
+      block.style.color = cat.text;
+      block.style.top = top+"px";
+      block.style.height = height+"px";
+      block.innerHTML = `<span class="ev-time">${ev.start} – ${ev.end}</span><span class="ev-title">${escapeHtml(ev.title)}</span>${ev.sub?`<span class="ev-sub">${escapeHtml(ev.sub)}</span>`:""}`;
+      block.addEventListener("click", (e)=>{ e.stopPropagation(); openEventModal(ev.id); });
+      col.appendChild(block);
+    });
+
+    col.addEventListener("click", (e)=>{
+      if(e.target!==col) return;
+      const rect = col.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      let minutesFromStart = Math.round(((y/HOUR_H)*60)/15)*15;
+      let totalMin = START_HOUR*60 + minutesFromStart;
+      totalMin = Math.max(START_HOUR*60, Math.min((END_HOUR-1)*60, totalMin));
+      openEventModal(null, iso, minutesToTime(totalMin), minutesToTime(totalMin+60));
+    });
+
+    sched.appendChild(col);
+    wrap.appendChild(sched);
   }
 
   function timeToMinutes(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
@@ -1092,6 +1311,7 @@
       el.textContent = d.getDate();
       el.addEventListener("click", ()=>{
         currentWeekStart = startOfWeek(d);
+        mobileSelectedDate = d;
         document.querySelector('.nav-item[data-view="agenda"]').click();
         renderWeekGrid();
       });
@@ -1146,6 +1366,35 @@
       notesArea.value = "";
       renderWeekGrid(); renderTasks(); renderAllTasks(); renderMiniCal(); renderStats();
     }, "Alles wissen");
+  });
+
+  /* ---------------- Mobiel: hamburger-menu ---------------- */
+  const mobileDrawer = document.getElementById("mobileDrawer");
+  const mobileDrawerOverlay = document.getElementById("mobileDrawerOverlay");
+  function openDrawer(){
+    mobileDrawer.classList.add("open");
+    mobileDrawerOverlay.classList.add("open");
+  }
+  function closeDrawer(){
+    mobileDrawer.classList.remove("open");
+    mobileDrawerOverlay.classList.remove("open");
+  }
+  document.getElementById("mobileMenuBtn").addEventListener("click", openDrawer);
+  document.getElementById("mobileDrawerClose").addEventListener("click", closeDrawer);
+  mobileDrawerOverlay.addEventListener("click", closeDrawer);
+  document.getElementById("drawerInstellingenBtn").addEventListener("click", ()=>{
+    document.querySelector('.nav-item[data-view="instellingen"]').click();
+    closeDrawer();
+  });
+
+  /* ---------------- Mobiel: floating actieknop ---------------- */
+  document.getElementById("mobileFabBtn").addEventListener("click", ()=>{
+    const activeView = document.querySelector(".view.active");
+    if(activeView && activeView.id==="view-taken"){
+      openTaskModal();
+    } else {
+      openEventModal(null, fmtISO(mobileSelectedDate));
+    }
   });
 
   /* ---------------- Init ---------------- */
